@@ -68,7 +68,7 @@ public class UserDaoImpl implements UserDao {
     /**
      * Создаём объект Query, который содержит все записи таблицы User. Устанавливаем начало и конец выборки.
      * Возвращаем выбраный фрагмент в виде листа.
-     * */
+     */
 
     @Override
     public List showOnePage(int page, int recordsPerPage) {

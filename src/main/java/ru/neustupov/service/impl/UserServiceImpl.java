@@ -8,44 +8,47 @@ import ru.neustupov.service.UserService;
 
 import java.util.List;
 
-//Аннотация обьявляющая, что этот класс представляет собой сервис – компонент сервис-слоя.
+/**
+ * Service - Аннотация обьявляющая, что этот класс представляет собой сервис – компонент сервис-слоя.
+ */
+
 @Service
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
     private UserDao userDao;
 
     @Override
     public void add(User user) {
-
+        userDao.add(user);
     }
 
     @Override
     public String edit(User user) {
-        return null;
+        return userDao.edit(user);
     }
 
     @Override
     public String delete(int userId) {
-        return null;
+        return userDao.delete(userId);
     }
 
     @Override
     public User getUser(int userId) {
-        return null;
+        return userDao.getUser(userId);
     }
 
     @Override
     public int getAllUserNumber() {
-        return 0;
+        return userDao.getAllUserNumber();
     }
 
     @Override
     public List showOnePage(int page, int recordsPerPage) {
-        return null;
+        return userDao.showOnePage(page, recordsPerPage);
     }
 
     @Override
     public User getUserByName(String name) {
-        return null;
+        return userDao.getUserByName(name);
     }
 }
