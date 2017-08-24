@@ -3,6 +3,7 @@ package ru.neustupov.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import ru.neustupov.model.User;
@@ -64,9 +65,8 @@ public class UserController {
     /**
      *  В SpringFramework существует специальный класс CustomDateEditor , в котором реализована логика
      *  преобразования нашего объекта типа Date в строку и наоборот. Первый параметр в конструкторе
-     *  CustomDateEditor формат представления даты как строки. Этот класс
-     *  позаботиться что-бы nowDate из первого примера, преобразовался в
-     *  указанный формат и вывелся на форму, при отправке формы на сервер, текстовое значение поля someDate
+     *  CustomDateEditor формат представления даты как строки. При отправке формы на сервер, текстовое значение
+     *  поля someDate
      *  будет также обрабатывать класс CustomDateEditor и преобразует его в правильную дату.
      *  Второй параметр определяет допускаются ли пустые значения в этом поле.
      *  InitBinder - проводит валидацию поступаемых данных.
@@ -121,5 +121,106 @@ public class UserController {
 
         return "user";
 
+    }
+
+    @RequestMapping(value="/user.do", method=RequestMethod.POST)
+    public String doActions(@ModelAttribute User user,
+                            BindingResult result,
+                            @RequestParam String action,
+                            Map<String, Object> map){
+
+
+        page=1;
+
+        User userResult = new User();
+        switch(action.toLowerCase()){	//only in Java7 you can put String in switch
+            case "add":
+                if (user.getName().length()==0||!user.getName().matches( "^[a-zA-Z\\s]*$")){
+                    user=new User();
+                    map.put("alert","Is your user Daemon? ;) ");
+                }
+                else if(user.getAge()<=0||user.getAge()>100){
+                    user=new User();
+                    map.put("alert","PLEASE input correct: Age");
+                }
+                else if(userService.getUserByName(user.getName())!=null){
+                    user=new User();
+                    String ss="This  user already exists in dataBase :(";
+                    map.put("alert",ss);
+
+                }
+                else{
+
+                    userService.add(user);
+                    map.put("alert","You added user succesfully. Here we go!");
+                }
+                userResult = user;
+                break;
+            case "edit":
+                try {
+                    if (user.getName().length()==0||!user.getName().matches( "^[a-zA-Z\\s]*$")){
+                        user=new User();
+                        map.put("alert","Is your user Daemon? ;) ");
+                    }
+                    else if(user.getAge()<=0||user.getAge()>100){
+                        user=new User();
+                        map.put("alert","PLEASE input correct: Age");
+                    }
+                    map.put("alert",userService.edit(user));
+                } catch (Exception e) {
+                    map.put("alert","some problems with your input :(");
+                    // TODO: handle exception
+                }
+
+                userResult = user;
+                break;
+            case "delete":
+                map.put("alert",userService.delete(user.getId()));
+
+                userResult = new User();
+                break;
+            case "search by id":
+                User searcheduser;
+                try {
+                    searcheduser = userService.getUser(user.getId());
+                    if (searcheduser==null)
+                        map.put("alert","some problems with your \"ID\" input :(");
+                } catch (Exception e) {
+                    // TODO: handle exception
+                    searcheduser = new User();
+                    map.put("alert","some problems with your \"ID\" input :(");
+                }
+
+                userResult = searcheduser!=null ? searcheduser : new User();
+                break;
+
+            case "search by name":
+                User searcheduserByName;
+                try {
+                    searcheduserByName = userService.getUserByName(user.getName());
+                    if (searcheduserByName==null)
+                        map.put("alert"," No such user :(");
+                } catch (Exception e) {
+                    // TODO: handle exception
+                    searcheduserByName = new User();
+                    map.put("alert","some problems with your \"NAME\" input :(");
+                }
+
+                userResult = searcheduserByName!=null ? searcheduserByName : new User();
+                break;
+
+        }
+
+        allDataSize=userService.getAllUserNumber();
+        numberOfPages=allDataSize%recordsPerPage==0?allDataSize/recordsPerPage:allDataSize/recordsPerPage+1;
+
+
+        map.put("currentPage", getPage());
+        map.put("user", userResult);
+        map.put("userList", userService.showOnePage(page, recordsPerPage));
+        map.put("noOfPages", numberOfPages);
+
+
+        return "user";
     }
 }
